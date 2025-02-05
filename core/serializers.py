@@ -25,5 +25,18 @@ class RetrieveProfileSerializer(serializers.ModelSerializer):
             "followers",
             "description",
             "privacy_setting",
-
         ]
+
+
+class PostSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source="owner.username")
+
+    class Meta:
+        model = Post
+        fields = ["id", "title", "owner", "created_at"]
+
+
+class PostRetrieveSerializer(PostSerializer):
+    class Meta:
+        model = Post
+        fields = PostSerializer.Meta.fields + ["body"]
