@@ -62,3 +62,17 @@ class CommentsListPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Commentary
         fields = ["id", "user", "body"]
+
+
+class BlockedListUserSerializer(CommentsListPostSerializer):
+    blocked = serializers.ReadOnlyField(source="blocked.username")
+
+    class Meta:
+        model = Blocked
+        fields = ["id", "blocked"]
+
+
+class BlockedUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Blocked
+        fields = ["id", "blocked"]
