@@ -40,3 +40,15 @@ class PostRetrieveSerializer(PostSerializer):
     class Meta:
         model = Post
         fields = PostSerializer.Meta.fields + ["body"]
+
+
+class LikesListPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ["id", "user"]
+
+
+class LikeCreatePostSerializer(LikesListPostSerializer):
+    class Meta:
+        model = Like
+        fields = LikesListPostSerializer.Meta.fields + ["post"]

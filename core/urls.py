@@ -4,6 +4,7 @@ from rest_framework import routers
 from core.views import (
     RetrieveProfileView,
     PostListView,
+    LikesView,
 )
 from user.views import UserFollowersFollowingViewSet
 
@@ -22,6 +23,7 @@ urlpatterns = [
         RetrieveProfileView.as_view(),
         name="profile-retrieve"
     ),
+    path("posts/<int:pk>/likes/", LikesView.as_view(), name="likes-view"),
 ]
 
 app_name = "core"
