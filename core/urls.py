@@ -5,6 +5,7 @@ from core.views import (
     RetrieveProfileView,
     PostListView,
     LikesView,
+    CommentsView,
 )
 from user.views import UserFollowersFollowingViewSet
 
@@ -24,6 +25,8 @@ urlpatterns = [
         name="profile-retrieve"
     ),
     path("posts/<int:pk>/likes/", LikesView.as_view(), name="likes-view"),
+    path("posts/<int:pk>/commentaries/", CommentsView.as_view(), name="commentaries-view"),
+    path("posts/<int:pk>/commentaries/<int:comment_id>/delete/", CommentsView.as_view(), name="commentaries-view"),
 ]
 
 app_name = "core"

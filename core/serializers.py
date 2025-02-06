@@ -43,6 +43,8 @@ class PostRetrieveSerializer(PostSerializer):
 
 
 class LikesListPostSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source="user.username")
+
     class Meta:
         model = Like
         fields = ["id", "user"]
@@ -52,3 +54,11 @@ class LikeCreatePostSerializer(LikesListPostSerializer):
     class Meta:
         model = Like
         fields = LikesListPostSerializer.Meta.fields + ["post"]
+
+
+class CommentsListPostSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source="user.username")
+
+    class Meta:
+        model = Commentary
+        fields = ["id", "user", "body"]
