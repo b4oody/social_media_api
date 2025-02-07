@@ -1,13 +1,14 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from core.models import (
     Profile,
     Post,
-    Follower,
     Like,
     Commentary,
     Blocked
 )
+from user.serializers import UserSerializer
 
 
 class RetrieveProfileSerializer(serializers.ModelSerializer):
@@ -19,7 +20,6 @@ class RetrieveProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = [
             "id",
-            "user",
             "username",
             "following",
             "followers",
@@ -76,3 +76,76 @@ class BlockedUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blocked
         fields = ["id", "blocked"]
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ["description", "privacy_setting"]
+        extra_kwargs = {
+            "description": {"required": False, "allow_blank": True},
+        }
+
+
+class UserProfileSerializer(UserSerializer):
+    description = serializers.CharField(
+        source="profile.description",
+        required=False,
+        allow_blank=True
+    )
+    privacy_setting = serializers.ChoiceField(
+        source="profile.privacy_setting",
+        choices=Profile.PrivacySettings.choices,
+        required=False
+    )
+
+    following_count = serializers.IntegerField(read_only=True)
+    followers_count = serializers.IntegerField(read_only=True)
+    liked = serializers.IntegerField(read_only=True)
+    blocked = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = get_user_model()
+        fields = [
+            "id",
+            "username",
+            "email",
+            "description",
+            "privacy_setting",
+            "following_count",
+            "followers_count",
+            "liked",
+            "blocked",
+        ]
+        read_only_fields = ["id"]
+
+        extra_kwargs = {
+            "password": {"write_only": True, "min_length": 5},
+        }
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.copy()
+
+        if "username" in user_data:
+            instance.username = user_data.get("username", instance.username)
+        if "email" in user_data:
+            instance.email = user_data.get("email", instance.email)
+
+        instance.save()
+
+        profile_data = user_data.get("profile", {})
+
+        if profile_data:
+            profile, created = Profile.objects.get_or_create(
+                user=instance)
+            profile.description = profile_data.get(
+                "description",
+                profile.description
+            )
+            profile.privacy_setting = profile_data.get(
+                "privacy_setting",
+                profile.privacy_setting
+            )
+            profile.save()
+
+        return instance

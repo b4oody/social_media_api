@@ -1,6 +1,6 @@
 from django.db.models import Count
 from rest_framework import generics, viewsets, views, status
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import get_object_or_404, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -11,7 +11,11 @@ from core.serializers import (
     PostSerializer,
     PostRetrieveSerializer,
     LikesListPostSerializer,
-    LikeCreatePostSerializer, CommentsListPostSerializer, BlockedListUserSerializer, )
+    LikeCreatePostSerializer,
+    CommentsListPostSerializer,
+    BlockedListUserSerializer,
+    UserProfileSerializer,
+)
 from user.models import User
 
 
@@ -20,11 +24,13 @@ class RetrieveProfileView(generics.RetrieveAPIView):
     serializer_class = RetrieveProfileSerializer
     lookup_field = "id"
 
-    def get_queryset(self):
+    def get_queryset(self, *args, **kwargs):
         queryset = self.queryset
-        return queryset.annotate(
+        return queryset.filter(user_id=self.kwargs["id"]).annotate(
             following=Count("user__following", distinct=True),
             followers=Count("user__followers", distinct=True),
+            liked=Count("user__likes", distinct=True),
+            blocked=Count("user__blocked_users", distinct=True),
         )
 
 
@@ -85,7 +91,7 @@ class LikesView(views.APIView):
             )
         existing_like.delete()
         return Response(
-        {"detail": "Like deleted successfully."},
+            {"detail": "Like deleted successfully."},
             status=status.HTTP_204_NO_CONTENT)
 
 
@@ -169,8 +175,8 @@ class BlockedUserView(views.APIView):
             )
 
         blocked_in_bd = Blocked.objects.filter(
-                blocker=blocker,
-                blocked=user
+            blocker=blocker,
+            blocked=user
         )
         if not blocked_in_bd.exists():
             return Response(
@@ -181,3 +187,18 @@ class BlockedUserView(views.APIView):
         return Response(
             {f"{user} unblocked successfully."},
             status=status.HTTP_204_NO_CONTENT)
+
+
+class ProfileView(generics.RetrieveAPIView, UpdateAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        user = self.request.user
+        profile = User.objects.filter(id=user.id).annotate(
+            following_count=Count("following", distinct=True),
+            followers_count=Count("followers", distinct=True),
+            liked=Count("likes", distinct=True),
+            blocked=Count("blocked_users", distinct=True)
+        ).first()
+        return profile
