@@ -49,6 +49,22 @@ class PostListView(viewsets.ModelViewSet):
             self.permission_classes = [IsOwnerOrReadOnly]
         return super().get_permissions()
 
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action in ("list", "retrieve"):
+            queryset = queryset.annotate(
+                likes_count=Count(
+                    "likes",
+                    distinct=True
+                ),
+                commentaries_count=Count(
+                    "commentaries",
+                    distinct=True
+                ),
+
+            )
+        return queryset
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 

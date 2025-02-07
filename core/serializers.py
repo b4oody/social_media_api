@@ -30,16 +30,35 @@ class RetrieveProfileSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source="owner.username")
+    likes_count = serializers.IntegerField(read_only=True)
+    commentaries_count = serializers.IntegerField()
 
     class Meta:
         model = Post
-        fields = ["id", "title", "owner", "created_at"]
+        fields = [
+            "id",
+            "title",
+            "owner",
+            "likes_count",
+            "commentaries_count",
+            "created_at"
+        ]
+
+
+class CommentariesSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source="user.username")
+
+    class Meta:
+        model = Commentary
+        fields = ["id", "user", "body", "created_at"]
 
 
 class PostRetrieveSerializer(PostSerializer):
+    commentaries = CommentariesSerializer(many=True)
+
     class Meta:
         model = Post
-        fields = PostSerializer.Meta.fields + ["body"]
+        fields = PostSerializer.Meta.fields + ["body", "commentaries"]
 
 
 class LikesListPostSerializer(serializers.ModelSerializer):
