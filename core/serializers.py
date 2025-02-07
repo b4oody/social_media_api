@@ -31,7 +31,7 @@ class RetrieveProfileSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source="owner.username")
     likes_count = serializers.IntegerField(read_only=True)
-    commentaries_count = serializers.IntegerField()
+    commentaries_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Post

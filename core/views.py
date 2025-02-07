@@ -1,10 +1,17 @@
-from django.db.models import Count
+from django.db.models import Count, Case, When, Value, IntegerField
 from rest_framework import generics, viewsets, views, status
 from rest_framework.generics import get_object_or_404, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from core.models import Profile, Post, Like, Commentary, Blocked
+from core.models import (
+    Profile,
+    Post,
+    Like,
+    Commentary,
+    Blocked,
+    Follower
+)
 from core.permissions import IsOwnerOrReadOnly
 from core.serializers import (
     RetrieveProfileSerializer,
@@ -50,6 +57,7 @@ class PostListView(viewsets.ModelViewSet):
         return super().get_permissions()
 
     def get_queryset(self):
+        user = self.request.user
         queryset = self.queryset
         if self.action in ("list", "retrieve"):
             queryset = queryset.annotate(
@@ -63,6 +71,19 @@ class PostListView(viewsets.ModelViewSet):
                 ),
 
             )
+        if user.is_authenticated:
+            following_users = Follower.objects.filter(
+                follower=user
+            ).values_list("following_id", flat=True)
+
+            queryset = queryset.annotate(
+                priority=Case(
+                    When(owner_id__in=following_users, then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField()
+                )
+            ).order_by("-priority", "created_at")
+
         return queryset
 
     def perform_create(self, serializer):
