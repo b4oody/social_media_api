@@ -6,7 +6,8 @@ from core.models import (
     Post,
     Like,
     Commentary,
-    Blocked
+    Blocked,
+    Follower
 )
 from user.serializers import UserSerializer
 
@@ -176,3 +177,9 @@ class LikedPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
         fields = ["id", "post", "created_at"]
+
+
+class FollowerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follower
+        fields = ["id", "follower", "following"]

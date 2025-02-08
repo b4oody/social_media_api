@@ -8,7 +8,8 @@ from core.views import (
     CommentsView,
     BlockedUserView,
     ProfileView,
-    LikedPostView
+    LikedPostView,
+    FollowSerializer
 )
 from user.views import UserFollowersFollowingViewSet
 
@@ -41,6 +42,11 @@ urlpatterns = [
         "profile/liked/",
         LikedPostView.as_view(),
         name="liked-posts-view"
+    ),
+    path(
+        "profile/<int:pk>/following-unfollowing/",
+        FollowSerializer.as_view(),
+        name="following-unfollowing-view"
     ),
     path(
         "posts/<int:pk>/commentaries/",
