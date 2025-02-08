@@ -6,7 +6,9 @@ from core.views import (
     PostListView,
     LikesView,
     CommentsView,
-    BlockedUserView, ProfileView,
+    BlockedUserView,
+    ProfileView,
+    LikedPostView
 )
 from user.views import UserFollowersFollowingViewSet
 
@@ -30,7 +32,16 @@ urlpatterns = [
         ProfileView.as_view(),
         name="profile-me"
     ),
-    path("posts/<int:pk>/likes/", LikesView.as_view(), name="likes-view"),
+    path(
+        "posts/<int:pk>/likes/",
+        LikesView.as_view(),
+        name="likes-view"
+    ),
+    path(
+        "profile/liked/",
+        LikedPostView.as_view(),
+        name="liked-posts-view"
+    ),
     path(
         "posts/<int:pk>/commentaries/",
         CommentsView.as_view(),
