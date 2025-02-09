@@ -14,17 +14,36 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from debug_toolbar.toolbar import debug_toolbar_urls
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
 
 from social_media_api.settings import base
 
-urlpatterns = ([
-    path("admin/", admin.site.urls),
-    path("api/v1/social-media/", include("core.urls"), name="social_media"),
-    path("api/v1/social-media/user/", include("user.urls"), name="user"),
-]
+urlpatterns = (
+    [
+        path("admin/", admin.site.urls),
+        path("api/v1/social-media/", include("core.urls"), name="social_media"),
+        path("api/v1/social-media/user/", include("user.urls"), name="user"),
+        path("api/v1/social-media/schema/", SpectacularAPIView.as_view(), name="schema"),
+        path(
+            "api/v1/social-media/schema/swagger-ui/",
+            SpectacularSwaggerView.as_view(url_name="schema"),
+            name="swagger-ui",
+        ),
+        path(
+            "api/v1/social-media/schema/redoc/",
+            SpectacularRedocView.as_view(url_name="schema"),
+            name="redoc",
+        ),
+    ]
     + static(base.STATIC_URL, document_root=base.MEDIA_ROOT)
-    + debug_toolbar_urls())
+    + debug_toolbar_urls()
+)
