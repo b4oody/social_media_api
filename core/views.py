@@ -1,4 +1,5 @@
 from django.db.models import Count, Case, When, Value, IntegerField, Q
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from rest_framework import (
     generics,
     viewsets,
@@ -118,12 +119,43 @@ class PostListView(viewsets.ModelViewSet):
 class LikesView(views.APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Get likes for a post",
+        description="Retrieve a list of users who liked a specific post.",
+        responses={200: LikesListPostSerializer},
+        parameters=[
+            OpenApiParameter(
+                "pk",
+                description="ID of the post to fetch likes for",
+                required=True,
+                type=int
+            )
+        ]
+    )
     def get(self, request, pk, *args, **kwargs):
         post_id = get_object_or_404(Post, pk=pk)
         likes = Like.objects.filter(post=post_id).select_related("user")
         serializer = LikesListPostSerializer(likes, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        summary="Like a post",
+        description="Create a like for a specific post by "
+                    "the authenticated user. "
+                    "You can like a post only once.",
+        request=LikeCreatePostSerializer,
+        responses={
+            201: LikeCreatePostSerializer,
+            400: OpenApiResponse(description="You have already liked this post.")
+        },
+        parameters=[
+            OpenApiParameter(
+                "pk",
+                description="ID of the post to like",
+                required=True,
+                type=int)
+        ]
+    )
     def post(self, request, pk, *args, **kwargs):
         post_id = get_object_or_404(Post, pk=pk)
         existing_like = Like.objects.filter(
@@ -139,6 +171,24 @@ class LikesView(views.APIView):
         serializer = LikeCreatePostSerializer(like)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(
+        summary="Unlike a post",
+        description="Remove the like from a specific "
+                    "post by the authenticated user. "
+                    "You can only remove a like you have previously added.",
+        responses={
+            204: OpenApiResponse(description="Like deleted successfully."),
+            400: OpenApiResponse(description="You have not liked this post.")
+        },
+        parameters=[
+            OpenApiParameter(
+                "pk",
+                description="ID of the post to unlike",
+                required=True,
+                type=int
+            )
+        ]
+    )
     def delete(self, request, pk, *args, **kwargs):
         self.permission_classes = [IsOwnerOrReadOnly]
         post_id = get_object_or_404(Post, pk=pk)
@@ -160,6 +210,19 @@ class LikesView(views.APIView):
 class CommentsView(views.APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Get comments for a post",
+        description="Retrieve a list of comments for a specific post.",
+        responses={200: CommentsListPostSerializer},
+        parameters=[
+            OpenApiParameter(
+                "pk",
+                description="ID of the post to fetch comments for",
+                required=True,
+                type=int
+            )
+        ]
+    )
     def get(self, request, pk, *args, **kwargs):
         post_id = get_object_or_404(Post, pk=pk)
         commentaries = Commentary.objects.filter(
@@ -167,6 +230,23 @@ class CommentsView(views.APIView):
         serializer = CommentsListPostSerializer(commentaries, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        summary="Create a comment for a post",
+        description="Create a new comment on a specific post.",
+        request=CommentsListPostSerializer,
+        responses={
+            201: CommentsListPostSerializer,
+            400: OpenApiResponse(description="Body is required.")
+        },
+        parameters=[
+            OpenApiParameter(
+                "pk",
+                description="ID of the post to add the comment for",
+                required=True,
+                type=int
+            )
+        ]
+    )
     def post(self, request, pk, *args, **kwargs):
         post_id = get_object_or_404(Post, pk=pk)
         body = request.data.get("body")
@@ -184,6 +264,27 @@ class CommentsView(views.APIView):
         serializer = CommentsListPostSerializer(commentary)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(
+        summary="Delete a comment",
+        description="Delete a specific comment if the current user is the owner of the comment.",
+        responses={
+            204: OpenApiResponse(description="Comment deleted successfully."),
+            403: OpenApiResponse(description="Forbidden to delete this comment."),
+        },
+        parameters=[
+            OpenApiParameter(
+                "pk",
+                description="ID of the post",
+                required=True,
+                type=int),
+            OpenApiParameter(
+                "comment_id",
+                description="ID of the comment to delete",
+                required=True,
+                type=int
+            )
+        ]
+    )
     def delete(self, request, pk, comment_id, *args, **kwargs):
         post = get_object_or_404(Post, pk=pk)
         comment = get_object_or_404(Commentary, pk=comment_id, post=post)
@@ -200,12 +301,41 @@ class CommentsView(views.APIView):
 class BlockedUserView(views.APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Get list of blocked users",
+        description="Retrieve the list of "
+                    "users that the authenticated user has blocked.",
+        responses={200: BlockedListUserSerializer},
+    )
     def get(self, request, *args, **kwargs):
         owner = request.user
         blocked_users = owner.blocked_users.all()
         serializer = BlockedListUserSerializer(blocked_users, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        summary="Block a user",
+        description="Block a specific user. "
+                    "You cannot block yourself, and you can only block a user once.",
+        request=None,
+        responses={
+            201: OpenApiResponse(
+                description="User blocked successfully."
+            ),
+            400: OpenApiResponse(
+                description="You cannot block yourself "
+                            "or user is already blocked."
+            )
+        },
+        parameters=[
+            OpenApiParameter(
+                "pk",
+                description="ID of the user to block",
+                required=True,
+                type=int
+            )
+        ]
+    )
     def post(self, request, pk, *args, **kwargs):
         user = get_object_or_404(User, pk=pk)
         blocker = self.request.user
@@ -228,6 +358,28 @@ class BlockedUserView(views.APIView):
             status=status.HTTP_201_CREATED
         )
 
+    @extend_schema(
+        summary="Unblock a user",
+        description="Unblock a specific user that "
+                    "was previously blocked. You cannot unblock yourself.",
+        responses={
+            204: OpenApiResponse(
+                description="User unblocked successfully."
+            ),
+            400: OpenApiResponse(
+                description="You cannot unblock yourself "
+                            "or user was not blocked."
+            )
+        },
+        parameters=[
+            OpenApiParameter(
+                "pk",
+                description="ID of the user to unblock",
+                required=True,
+                type=int
+            )
+        ]
+    )
     def delete(self, request, pk, *args, **kwargs):
         user = get_object_or_404(User, pk=pk)
         blocker = self.request.user
