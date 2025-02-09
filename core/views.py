@@ -158,11 +158,12 @@ class LikesView(views.APIView):
 
 
 class CommentsView(views.APIView):
-    permission_classes = [IsAuthenticated, CanCommentOnPostPermission]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, pk, *args, **kwargs):
         post_id = get_object_or_404(Post, pk=pk)
-        commentaries = Commentary.objects.filter(post=post_id)
+        commentaries = Commentary.objects.filter(
+            post=post_id).select_related("user")
         serializer = CommentsListPostSerializer(commentaries, many=True)
         return Response(serializer.data)
 
@@ -267,11 +268,11 @@ class ProfileView(generics.RetrieveAPIView, UpdateAPIView):
 
 
 class LikedPostView(views.APIView):
-    permission_classes = [IsAuthenticated, CanLikePostPermission]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         user = self.request.user
-        likes = Like.objects.filter(user=user)
+        likes = Like.objects.filter(user=user).select_related("post")
         serializer = LikedPostSerializer(likes, many=True)
         return Response(serializer.data)
 
