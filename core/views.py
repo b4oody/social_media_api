@@ -107,7 +107,7 @@ class PostListView(viewsets.ModelViewSet):
             ).annotate(
                 likes_count=Count("likes", distinct=True),
                 commentaries_count=Count("commentaries", distinct=True),
-            )
+            ).select_related("owner").prefetch_related("commentaries__user")
 
         return queryset
 
