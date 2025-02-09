@@ -39,6 +39,7 @@ class PostSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
+            "image_post",
             "owner",
             "likes_count",
             "commentaries_count",
@@ -59,7 +60,7 @@ class PostRetrieveSerializer(PostSerializer):
 
     class Meta:
         model = Post
-        fields = PostSerializer.Meta.fields + ["body", "commentaries"]
+        fields = (PostSerializer.Meta.fields + ["body", "commentaries"])
 
 
 class LikesListPostSerializer(serializers.ModelSerializer):
