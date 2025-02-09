@@ -120,7 +120,7 @@ class LikesView(views.APIView):
 
     def get(self, request, pk, *args, **kwargs):
         post_id = get_object_or_404(Post, pk=pk)
-        likes = Like.objects.filter(post=post_id)
+        likes = Like.objects.filter(post=post_id).select_related("user")
         serializer = LikesListPostSerializer(likes, many=True)
         return Response(serializer.data)
 
