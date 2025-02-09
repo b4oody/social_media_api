@@ -14,11 +14,11 @@ class UserFollowersFollowingSerializer(serializers.ModelSerializer):
         fields = ["username", "followers", "following"]
 
     def get_followers(self, obj):
-        followers = Follower.objects.filter(following=obj)
+        followers = Follower.objects.filter(following=obj).select_related("follower")
         return [follower.follower.username for follower in followers]
 
     def get_following(self, obj):
-        following = Follower.objects.filter(follower=obj)
+        following = Follower.objects.filter(follower=obj).select_related("following")
         return [follow.following.username for follow in following]
 
 
