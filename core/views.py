@@ -1,5 +1,11 @@
 from django.db.models import Count, Case, When, Value, IntegerField, Q
-from rest_framework import generics, viewsets, views, status
+from rest_framework import (
+    generics,
+    viewsets,
+    views,
+    status,
+    decorators
+)
 from rest_framework.generics import get_object_or_404, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -36,7 +42,6 @@ class RetrieveProfileView(generics.RetrieveAPIView):
     queryset = Profile.objects.all()
     serializer_class = RetrieveProfileSerializer
     lookup_field = "id"
-
 
     def get_queryset(self, *args, **kwargs):
         queryset = self.queryset

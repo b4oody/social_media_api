@@ -101,7 +101,7 @@ class BlockedUserSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ["description", "privacy_setting"]
+        fields = ["image_profile", "description", "privacy_setting"]
         extra_kwargs = {
             "description": {"required": False, "allow_blank": True},
         }
@@ -118,6 +118,11 @@ class UserProfileSerializer(UserSerializer):
         choices=Profile.PrivacySettings.choices,
         required=False
     )
+    image_profile = serializers.ImageField(
+        source="profile.image_profile",
+        required=False,
+
+    )
 
     following_count = serializers.IntegerField(read_only=True)
     followers_count = serializers.IntegerField(read_only=True)
@@ -128,6 +133,7 @@ class UserProfileSerializer(UserSerializer):
         model = get_user_model()
         fields = [
             "id",
+            "image_profile",
             "username",
             "email",
             "description",
@@ -162,12 +168,12 @@ class UserProfileSerializer(UserSerializer):
                 "description",
                 profile.description
             )
-            profile.privacy_setting = profile_data.get(
-                "privacy_setting",
-                profile.privacy_setting
-            )
+            if "image_profile" in profile_data:
+                profile.image_profile = profile_data.get(
+                    "image_profile",
+                    profile.image_profile
+                )
             profile.save()
-
         return instance
 
 
