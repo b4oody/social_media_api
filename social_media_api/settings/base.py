@@ -146,8 +146,16 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Your Project API",
-    "DESCRIPTION": "Your project description",
+    "TITLE": "🌐 Social Media API 🚀💬",
+    "DESCRIPTION": "Social Media API is a powerful RESTful API "
+                   "for managing user profiles, posts, "
+                   "likes, comments, and subscriptions "
+                   "on a social network. This API allows you to "
+                   "integrate basic social platform "
+                   "features such as registration, "
+                   "logout, creating and editing "
+                   "posts, likes, comments, blocking "
+                   "users, and much more.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     # OTHER SETTINGS
