@@ -7,12 +7,16 @@ from django.utils.text import slugify
 from social_media_api.settings.base import AUTH_USER_MODEL
 
 
-def create_custom_path_profile(instance, filename):
+def create_custom_path(instance, filename, path_prefix):
     _, extension = os.path.splitext(filename)
     return os.path.join(
-        "uploads/profile_images/",
-        f"{slugify(instance.user)}-{uuid.uuid4()}{extension}"
+        path_prefix,
+        f"{slugify(str(instance))}-{uuid.uuid4()}{extension}"
     )
+
+
+def profile_image_path(instance, filename):
+    return create_custom_path(instance, filename, "uploads/profile_images/")
 
 
 class Profile(models.Model):
@@ -23,7 +27,7 @@ class Profile(models.Model):
     user = models.OneToOneField(AUTH_USER_MODEL, on_delete=models.CASCADE)
     description = models.TextField(blank=True, null=True)
     image_profile = models.ImageField(
-        upload_to=create_custom_path_profile,
+        upload_to=profile_image_path,
         blank=True,
         null=True,
         default="static/default_image/default_profile.png",
@@ -44,12 +48,8 @@ class Profile(models.Model):
         return f"Profile of {self.user}"
 
 
-def create_custom_path_post(instance, filename):
-    _, extension = os.path.splitext(filename)
-    return os.path.join(
-        "uploads/posts_images/",
-        f"{slugify(instance.title)}-{uuid.uuid4()}{extension}"
-    )
+def post_image_path(instance, filename):
+    return create_custom_path(instance, filename, "uploads/posts_images/")
 
 
 class Post(models.Model):
@@ -60,7 +60,11 @@ class Post(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
-    image_post = models.ImageField(upload_to=create_custom_path_post, blank=True, null=True)
+    image_post = models.ImageField(
+        upload_to=post_image_path,
+        blank=True,
+        null=True
+    )
 
     class Meta:
         indexes = [

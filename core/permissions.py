@@ -17,7 +17,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 
 class CanViewPostPermission(permissions.BasePermission):
     """
-    Пермішн для перевірки, чи може користувач бачити пост.
+    Permission to check if the user can see the post.
     """
 
     def has_permission(self, request, view):
@@ -40,7 +40,7 @@ class CanViewPostPermission(permissions.BasePermission):
 
 class CanLikePostPermission(permissions.BasePermission):
     """
-    Пермішн для перевірки, чи може користувач лайкати пост.
+    Permission to check if a user can like a post.
     """
 
     def has_permission(self, request, view):
@@ -63,7 +63,7 @@ class CanLikePostPermission(permissions.BasePermission):
 
 class CanCommentOnPostPermission(permissions.BasePermission):
     """
-    Пермішн для перевірки, чи може користувач коментувати пост.
+    Permission to check if a user can comment on a post.
     """
 
     def has_permission(self, request, view):

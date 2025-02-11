@@ -1,11 +1,14 @@
 from django.db.models import Count, Case, When, Value, IntegerField, Q
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiParameter,
+    OpenApiResponse
+)
 from rest_framework import (
     generics,
     viewsets,
     views,
-    status,
-    decorators
+    status
 )
 from rest_framework.generics import get_object_or_404, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -20,9 +23,7 @@ from core.models import (
     Follower
 )
 from core.permissions import (
-    IsOwnerOrReadOnly,
-    CanLikePostPermission,
-    CanCommentOnPostPermission
+    IsOwnerOrReadOnly
 )
 from core.serializers import (
     RetrieveProfileSerializer,
